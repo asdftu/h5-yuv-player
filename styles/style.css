@@ -1,0 +1,48 @@
+.playerTop {
+    width: 1920px;
+    height: 25px;
+    position: absolute;
+    top: 0px;
+    z-index: 10;
+    background-color: rgba(17, 48, 69, 0.9);
+}
+
+.playerBottom {
+    width: 1920px;
+    height: 25px;
+    position: absolute;
+    z-index: 10;
+    bottom: 0px;
+    background-color: rgba(17, 48, 69, 0.9);
+}
+
+#vidPlayerComp {
+    width: 1920px;
+    height: 1080px;
+    background-color: grey;
+    border: 2px solid rgba(17, 48, 69, 0.9);
+    position: absolute;
+    z-index: 10;
+    margin-top: 10px;
+}
+
+.canvasDiv {
+    position: absolute;
+    width: 1920px;
+    height: 1080px;
+}
+
+#canvas {
+    width: 1920px;
+    height: 1080px;
+}
+
+.no-padding {
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+.fullscreen {
+    width: 26px;
+    float: right;
+}

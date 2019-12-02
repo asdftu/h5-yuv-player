@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./styles/style.css">
+    <title>YUV Player</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+    </script>
+    <script src="./JS/player.js"></script>
+</head>
+
+<body style="padding-left: 10px">
+
+    <div class="file-input-container">
+        <label>file: </label>
+        <input type="file" id="fileInput">
+        <label id="status">loading status: </label>
+    </div>
+    <div class="options">
+        <label>width</label>
+        <input type="number" id="width" value="1920">
+        <label>height</label>
+        <input type="number" id="height" value="1080">
+        <button id="playBtn">play</button>
+        <button id="stopBtn">stop</button>
+    </div>
+
+    <div class="container" id="vidPlayerComp">
+        <div class="row canvasDiv">
+            <canvas id="canvas">
+            </canvas>
+        </div>
+        <div class="row playerBottom">
+            <span class="col-md-4 no-padding" style="padding-right: 0px; padding-left: 0px; width: 55px; float: right;">
+		     <img src="./img/fullscreen.png" class="fullscreen" onclick="fullscreen()">
+            </span>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#fileInput').change(function () {
+                console.log("load file: " + $(this).val());
+                const file = this.files[0];
+                loadFile(file);
+            });
+
+            var width = 0;
+            var height = 0;
+            var frames = [];
+            var fileArrayBuffer = null;
+            var loadFile = function(file) {
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    console.log('file loaded!');
+                    fileArrayBuffer = this.result;
+                }
+                reader.onprogress = function (data) {
+                    if (data.lengthComputable) {
+                        let progress = Math.floor(data.loaded * 100 / data.total);
+                        console.log(`loading: ${data.loaded} / ${data.total}, ${progress}%`);
+                        $('#status').text(`loading status: ${progress}%`);
+                    }
+                }
+                reader.readAsArrayBuffer(file);
+            }
+
+            var canvas = document.getElementById("canvas");
+            var renderContext = setupCanvas(canvas, {
+                preserveDrawingBuffer: true
+            });
+            var isPlaying = false;
+            var interval = null;
+            let index = 0;
+            $('#stopBtn').click(function () {
+                isPlaying = false;
+                clearInterval(interval);
+                interval = null;
+            });
+            $('#playBtn').click(function () {
+                isPlaying = false;
+                frames = [];
+                let widthVar = $("#width").val();
+                let heightVar = $('#height').val();
+
+                if (!fileArrayBuffer || !widthVar || !heightVar) {
+                    console.log('wrong format');
+                    return;
+                }
+                width = +widthVar;
+                height = +heightVar;
+
+                const OneFrameSize = width*height*1.5;
+                let offset = 0;
+                while (offset < fileArrayBuffer.byteLength) {
+                    frames.push(fileArrayBuffer.slice(offset, offset + OneFrameSize));
+                    offset += OneFrameSize;
+                }
+                console.log(`there are ${frames.length} frames, each frames has ${OneFrameSize} byte`);
+
+                /* Width & height must be same as resolution of YUV frame*/
+                var ylen = width * height,
+                    uvlen = (width / 2) * (height / 2);
+
+                interval = setInterval(function () {
+                    if (index >= frames.length) {
+                        // clearInterval(interval);
+                        // interval = null;
+                        // return;
+                    }
+                    index = index % frames.length;
+                    console.log(`render ${index} frame, timestamp: ${Date.now()}`);
+                    renderFrame(renderContext, new Uint8Array(frames[index++]), width, height, ylen, uvlen);
+                }, 33)
+            })
+        })
+    </script>
+</body>
+
+</html>
